@@ -1,8 +1,6 @@
 import csv
 import re
 import urllib.request
-#import urlparse
-import xml.dom.minidom
 import json
 import time
 
@@ -39,39 +37,43 @@ with open('data\\childrens.csv', 'w') as outputfile:
     writer = csv.writer(outputfile, delimiter=',',quotechar='"', quoting=csv.QUOTE_MINIMAL)
     
     olIsbns = ''
-    for batch in batcher(isbns, 200):
+    for batch in batcher(isbns, 10):
         olIsbns = ',ISBN:'.join(batch)
         openlibrary_url = books_api + olIsbns
-        content = urllib.request.urlopen(openlibrary_url)
-        str_response = content.read().decode('utf-8')
-        booksjson = json.loads(str_response)
-        
-        # Loop through all the books returned from Open Library
-        for book in booksjson:
-            # Fields to look at from open library: title, subjects, description, notes
-            match = False
-            for word in keywords:
-                if booksjson[book].get('title') != None:
-                    title = booksjson[book].get('title')
-                    if word in str.lower(title):
-                        match = True
-                if booksjson[book].get('subtitle') != None:
-                    subtitle = booksjson[book].get('subtitle')
-                    if word in str.lower(subtitle):
-                        match = True
-                if booksjson[book].get('description') != None:
-                    description = booksjson[book].get('description')
-                    if word in str.lower(description):
-                        match = True
-                if booksjson[book].get('notes') != None:
-                    notes = booksjson[book].get('notes')
-                    if word in str.lower(notes):
-                        match = True
-                if booksjson[book].get('subjects') != None:
-                    for subject in booksjson[book].get('subjects'):
-                        if word in subject:
+        print(openlibrary_url)
+        try:
+            content = urllib.request.urlopen(openlibrary_url)
+            str_response = content.read().decode('utf-8')
+            booksjson = json.loads(str_response)
+            
+            # Loop through all the books returned from Open Library
+            for book in booksjson:
+                # Fields to look at from open library: title, subjects, description, notes
+                match = False
+                for word in keywords:
+                    if booksjson[book].get('title') != None:
+                        title = booksjson[book].get('title')
+                        if word in str.lower(title):
                             match = True
-            if match == True:
-                writer.writerow([book,title])
-        
-        time.sleep(8)
+                    if booksjson[book].get('subtitle') != None:
+                        subtitle = booksjson[book].get('subtitle')
+                        if word in str.lower(subtitle):
+                            match = True
+                    if booksjson[book].get('description') != None:
+                        description = booksjson[book].get('description')
+                        if word in str.lower(description):
+                            match = True
+                    if booksjson[book].get('notes') != None:
+                        notes = booksjson[book].get('notes')
+                        if word in str.lower(notes):
+                            match = True
+                    if booksjson[book].get('subjects') != None:
+                        for subject in booksjson[book].get('subjects'):
+                            if word in subject:
+                                match = True
+                if match == True:
+                    writer.writerow([book,title])
+        except:
+            print('Failed')
+
+        time.sleep(10)
