@@ -46,29 +46,13 @@ The majority of the data for works/editions/authors is in the JSON. We'll be usi
 In the open library data a 'work' is a
 
 ```
-COPY works FROM 'C:\openlibrary-search\data\ol_dump_works_2016-07-31_processed.csv' DELIMITER E'\t' QUOTE '|' CSV;
+copy works FROM 'C:\openlibrary-search\data\ol_dump_works_2016-07-31_processed.csv' DELIMITER E'\t' QUOTE '|' CSV;
 ```
 
 
 ```
 create index idx_works_ginp on works using gin (data jsonb_path_ops);
 ```
-
-
-### Editions table
-
-The editions table is huge - it contains multiple editions for each work.  The file is 26GB, which seems to amount to about X million rows of data.
-
-
-
-```
-COPY editions FROM 'C:\openlibrary-search\data\ol_dump_editions_2016-07-31_processed.csv' DELIMITER E'\t' QUOTE '|' CSV;
-```
-
-```
-create index idx_editions_ginp on editions using gin (data jsonb_path_ops);
-```
-
 
 ### Authors table
 
@@ -115,33 +99,117 @@ where key is not null
 and data->'authors'->0->'author' is not null
 ```
 
+
+### Editions table
+
+The editions table is huge - the file is 26GB, which seems to amount to about 25 million rows of data.
+
+
+
+```
+COPY editions FROM 'C:\openlibrary-search\data\ol_dump_editions_2016-07-31_processed.csv' DELIMITER E'\t' QUOTE '|' CSV;
+```
+
+```
+create index idx_editions_ginp on editions using gin (data jsonb_path_ops)
+```
+
+
+We really want the ISBNs and work keys out of the main JSON data and into proper individual columns.
+
+
+```
+update editions
+set work_key = data->'works'->0->>'key'
+```
+
+Then index the work key.
+
+```
+
+```
+
+
+### EditionISBNs tables
+
+
+
+
+```
+insert into editionisbn13s
+select distinct key, jsonb_array_elements(data->'isbn_13')->>'key' from editions
+where key is not null
+and data->'isbn_13'->0->'key' is not null
+```
+
+
+
+
 ## Vacuum up the mess
 
+PostgreSQL has a function 
 
-
-
-
-
+``` 
+vacuum full analyze verbose
+```
 
 ## Query the data
 
-That's the database set up - in can now be queried using relatively straightforward.  For example:
+That's the database set up - in can now be queried using relatively straightforward SQL.
 
-Get 
-
-Once we have the database ready we can run some commands.
-
-The main query to run is the following.  This will join the editions and works table, while ensuring the edition is one contained in our ISBNs table.  It will also filter results to finding our keywords anywhere within the works text.
+Get details for a single item using the ISBN13 9781551922461 (Harry Potter and the Prisoner of Azkaban).
 
 ```
 select 
-cast(w.text5 as json)->'title' as "Title",
-cast(w.text5 as json)->'subtitle' as "Subtitle",
-e.isbn10 as "ISBN10",
-e.isbn13 as "ISBN13"
-from works w
-join editions e
-on e.workid = w.text2
-where (w.text5 ilike any (select '%' || keyword || '%' from keywords) or e.text5 ilike any (select '%' || keyword || '%' from keywords))
-and (e.isbn10 in (select isbn from isbns) or e.isbn13 in (select isbn from isbns))
+    e.data->>'title' "EditionTitle",
+    w.data->>'title' "WorkTitle",
+    e.data->>'subtitle' "EditionSubtitle",
+    w.data->>'subtitle' "WorkSubtitle",
+    e.data->>'subjects' "Subjects",
+    e.data->'description'->>'value' "EditionDescription",
+    w.data->'description'->>'value' "WorkDescription",
+    e.data->'notes'->>'value' "EditionNotes",
+    w.data->'notes'->>'value' "WorkNotes"
+from editions e
+join editionisbn13s ei
+    on ei.edition_key = e.key
+join works w
+    on w.key = e.work_key
+where ei.isbn13 = '9781551922461'
 ```
+
+
+```
+copy (
+	select distinct
+		e.data->>'title' "EditionTitle",
+		w.data->>'title' "WorkTitle",
+		e.data->>'subtitle' "EditionSubtitle",
+		w.data->>'subtitle' "WorkSubtitle",
+		e.data->>'subjects' "EditionSubjects",
+		w.data->>'subjects' "WorkSubjects",
+		e.data->'description'->>'value' "EditionDescription",
+		w.data->'description'->>'value' "WorkDescription",
+		e.data->'notes'->>'value' "EditionNotes",
+		w.data->'notes'->>'value' "WorkNotes"
+	from editions e
+	join works w
+		on w.key = e.work_key
+	join editionisbn13s ei13
+		on ei13.edition_key = e.key
+	where ei13.isbn13 IN (select isbn13 from isbn13s)
+	and (
+		lower(e.data->>'title') like any (select '%' || keyword || '%' from keywords) OR
+		lower(w.data->>'title') like any (select '%' || keyword || '%' from keywords) OR
+		lower(e.data->>'subtitle') like any (select '%' || keyword || '%' from keywords) OR
+		lower(w.data->>'subtitle') like any (select '%' || keyword || '%' from keywords) OR
+		lower(e.data->>'subjects') like any (select '%' || keyword || '%' from keywords) OR
+		lower(w.data->>'subjects') like any (select '%' || keyword || '%' from keywords) OR
+		lower(e.data->'description'->>'value') like any (select '%' || keyword || '%' from keywords) OR
+		lower(w.data->'description'->>'value') like any (select '%' || keyword || '%' from keywords) OR
+		lower(e.data->'notes'->>'value') like any (select '%' || keyword || '%' from keywords) OR
+		lower(w.data->'notes'->>'value') like any (select '%' || keyword || '%' from keywords)
+	)
+) to '\data\open_library_export.csv' With CSV DELIMITER E'\t';
+```
+
