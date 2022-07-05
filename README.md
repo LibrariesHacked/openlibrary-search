@@ -33,6 +33,7 @@ That means another python script to clean up the data.  The file [openlibrary-da
 The data is split into 3 files:
 
 | Data | Description | Fields | File name | Size |
+|:---|:---|:---|:---|:---|
 | Authors | Authors are the individuals who write the works! | Name, 
 | Works | The works as created by the authors, with titles, and subtitles. |
 | Editions | The particular editions of the works, including ISBNs | 
@@ -78,6 +79,7 @@ The relationship between works and authors is **many-to-many**.  That is to say 
 The typical way to represent this kind of relationship in a relational database is with a separate table.  This will be called **authorship** and will list a row for each instance of author and work.  For example:
 
 | author | work |
+|:---|:---|
 | JK Rowling | Harry Potter and the Prisoner of Azkaban |
 | JK Rowling | Harry Potter and the Cursed Child |
 | Jack Thorne | Harry Potter and the Cursed Child |
