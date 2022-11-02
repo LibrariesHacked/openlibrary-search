@@ -1,24 +1,23 @@
-# Open Library Searching
+# Searching Open Library
 
-**Task:** to use open library bibliographic data to search books based upon a pre-defined subset of ISBNs.
+Task: to use Open Library bibliographic data to search books based upon a pre-defined subset of ISBNs, and find all associated ISBNs.
 
-## Further details
+This was an initial task I had to complete for a project, so I looked at using Open Library data, which is a free library of bibliographic data and [includes large data dumps](https://openlibrary.org/developers/dumps). This project include instructions for importing the data into a database and some sample queries to test the database.
 
+### Downloading the data
 
-
-
-## Method 1: API
-
-
-**Abandon!  The API is a bit of a nightmare to use in bulk and Open Library discourage it (even with measures in place to limit requests).  See below for better alternative.**  
-
-## Method 2: Bulk download and database
-
-Open Library also offer bulk downloads on their website, available from the **Data Dumps** page.
+Open Library offer bulk downloads on their website, available from the **Data Dumps** page.
 
 [https://openlibrary.org/developers/dumps](https://openlibrary.org/developers/dumps)
 
-These are updated every month.
+These are updated every month. The downloads include:
+
+* Editions
+* Works
+* Authors
+* All types
+
+For this project, I downloaded the **All types** data, which is about 10Gb compressed.
 
 ### Import into database
 

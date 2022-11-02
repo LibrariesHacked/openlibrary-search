@@ -1,8 +1,8 @@
 import csv
 import re
 
-data_file = 'data\\children_isbns.csv'
-output_file = 'data\\children_isbns_clean.csv'
+data_file = 'data\\isbns.csv'
+output_file = 'data\\isbns_clean.csv'
 
 isbns = []
 # Read through the ISBNs in our CSV
