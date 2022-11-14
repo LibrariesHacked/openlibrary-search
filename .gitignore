@@ -2,5 +2,7 @@
 *.csv
 *.txt
 *.xlsx
-data/unprocessed/ol_dump_works_2022-06-06.txt.gz
-data/unprocessed/ol_dump_authors_2022-06-06.txt.gz
+
+data/unprocessed/ol_dump_works_*.txt.gz
+data/unprocessed/ol_dump_authors_*.txt.gz
+data/unprocessed/ol_dump_editions_*.txt.gz

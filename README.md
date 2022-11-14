@@ -1,27 +1,27 @@
-# Searching Open Library
+# Open Library database
 
-Task: to use Open Library bibliographic data to search books based upon a pre-defined subset of ISBNs, and find all associated ISBNs.
+> Task: to use Open Library bibliographic data to search books based upon a pre-defined subset of ISBNs, and find all associated ISBNs.
 
-This was an initial task I had to complete for a project, so I looked at using Open Library data, which is a free library of bibliographic data and [includes large data dumps](https://openlibrary.org/developers/dumps). This project include instructions for importing the data into a database and some sample queries to test the database.
+Open Library is an online free library of bibliographic data and includes [large data dumps](https://openlibrary.org/developers/dumps).
+
+This project provides instructions for importing the data into a PostgreSQL database and some sample queries to test the database.
 
 ### Downloading the data
 
-Open Library offer bulk downloads on their website, available from the **Data Dumps** page.
+Open Library offer bulk downloads on their website, available from the **Data Dumps** page at [https://openlibrary.org/developers/dumps](https://openlibrary.org/developers/dumps)
 
-[https://openlibrary.org/developers/dumps](https://openlibrary.org/developers/dumps)
+These are updated every month. The downloads available include:
 
-These are updated every month. The downloads include:
+* Editions (~8GB)
+* Works (~2.5GB)
+* Authors (~0.5GB)
+* All types (~10GB)
 
-* Editions
-* Works
-* Authors
-* All types
-
-For this project, I downloaded the **All types** data, which is about 10Gb compressed.
+For this project, I downloaded the Editions, Works, and Authors data.
 
 ### Import into database
 
-Using a postgreSQL database it should be possible to import the data directly into tables and then do complex searches with SQL.
+Using a PostgreSQL database it is possible to import the data directly into tables and then do complex searches with SQL.
 
 Unfortunately the downloads provided are a bit messy.  The open library file always errors as the number of columns provided seem to vary.  Cleaning it up is difficult as just the text file for editions is 25GB.
 
@@ -31,10 +31,10 @@ That means another python script to clean up the data.  The file [openlibrary-da
 
 The data is split into 3 files:
 
-| Data | Description | Fields | File name | Size |
-|:---|:---|:---|:---|:---|
-| Authors | Authors are the individuals who write the works! | Name, 
-| Works | The works as created by the authors, with titles, and subtitles. |
+| Data | Description | Fields |
+| :--- | :---------- | :----- |
+| Authors | Authors are the individuals who write the works | Name, 
+| Works | The works as created by the authors, with titles, and subtitles |
 | Editions | The particular editions of the works, including ISBNs | 
 
 ### Create indexes and extract from JSON
