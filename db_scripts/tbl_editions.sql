@@ -1,21 +1,15 @@
--- Table: public.editions
-
--- DROP TABLE public.editions;
-
-CREATE TABLE public.editions
-(
+create table editions (
   type text,
-  key text NOT NULL,
+  key text not null,
   revision integer,
   last_modified date,
   data jsonb,
   work_key text,
-  CONSTRAINT pk_edition PRIMARY KEY (key)
-)
-WITH (
-  OIDS=FALSE
+  constraint pk_editions_key primary key (key)
 );
-ALTER TABLE public.editions
-  OWNER TO postgres;
 
-  
+create unique index cuix_editions_key on editions (key);
+alter table editions cluster on cuix_editions_key;
+
+create index ix_editions_workkey on editions (work_key);
+create index ix_editions_data on editions using gin (data jsonb_path_ops);
