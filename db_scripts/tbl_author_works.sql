@@ -1,18 +1,11 @@
 create table author_works (
   author_key text NOT NULL,
   work_key text NOT NULL,
-  CONSTRAINT pk_authorworks_authorkey_workkey primary key (author_key, work_key)
+  constraint pk_authorworks_authorkey_workkey primary key (author_key, work_key)
 );
 
+create unique index cuix_authorworks_authorkey_workkey on author_works (author_key, work_key);
+alter table author_works cluster on cuix_authorworks_authorkey_workkey;
 
-CREATE UNIQUE INDEX cuix_author_work
-  ON public.authorship
-  USING btree
-  (author_key COLLATE pg_catalog."default", work_key COLLATE pg_catalog."default");
-ALTER TABLE public.authorship CLUSTER ON cuix_author_work;
-
-
-CREATE INDEX ix_work
-  ON public.authorship
-  USING btree
-  (work_key COLLATE pg_catalog."default");
+create index ix_authorworks_workkey on author_works (work_key);
+create index ix_authorworks_authorkey on author_works (author_key);
