@@ -7,3 +7,4 @@ data/unprocessed/ol_dump_works_*.txt.gz
 data/unprocessed/ol_dump_authors_*.txt.gz
 data/unprocessed/ol_dump_editions_*.txt.gz
 .vscode/settings.json
+create_db.bat

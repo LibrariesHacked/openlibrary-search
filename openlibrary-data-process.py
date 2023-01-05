@@ -9,7 +9,11 @@ from os.path import isfile, join
 input_path = "./data/unprocessed/"
 output_path = "./data/processed/"
 
-filesforprocessing = [f for f in listdir(input_path) if isfile(join(input_path, f))]
+filesforprocessing = [
+    "ol_dump_authors.txt",
+    "ol_dump_editions.txt",
+    "ol_dump_works.txt",
+]
 
 # See https://stackoverflow.com/a/54517228 for more info on this
 csv.field_size_limit(int(ct.c_ulong(-1).value // 2))

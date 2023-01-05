@@ -1,0 +1,1 @@
+psql --set=sslmode=require -f openlibrary-db.sql -h localhost -p 5432 -U username postgres
