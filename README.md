@@ -1,8 +1,20 @@
 # Open Library database
 
-Open Library is an online free library of bibliographic data and includes [large data dumps](https://openlibrary.org/developers/dumps).
+Open Library is an online free library of bibliographic data and includes [full data dumps](https://openlibrary.org/developers/dumps) of all its data.
 
-This project provides instructions for importing the data into a PostgreSQL database and some sample queries to test the database.
+This project provides instructions and scripts for importing this data into a PostgreSQL database and some sample queries to test the database.
+
+### Getting started
+
+The following steps should get you up and running with a working database.
+
+1. Install the [required prerequisites](#prerequisites) so that you have the software running and database server.
+2.
+
+### Prerequisites
+
+- Python 3 - Tested with 3.10
+- PostgreSQL - Version 15 is tested but most recent versions should work
 
 ### Downloading the data
 
@@ -27,38 +39,39 @@ gzip -d -c data/unprocessed/ol_dump_authors_*.txt.gz > data/unprocessed/ol_dump_
 
 ### Processing the data
 
-Unfortunately the downloads provided seem to be a bit messy, or at least don't play nicely with direct importing. The open library file always errors as the number of columns provided varies. Cleaning it up is difficult as just the text file for editions is 25GB. _Note: I could probably use some Linux tools to do this - maybe `sed` and `awk`_
+Unfortunately the downloads provided seem to be a bit messy, or at least don't play nicely with direct importing. The open library file errors on import as the number of columns provided varies. Cleaning it up is difficult as just the text file for editions is 25GB. _Note: Check if this is still the case and if so I could probably use some Linux tools to do this - maybe try `sed` and `awk`_
 
-That means another python script to clean up the data. The file [openlibrary-data-process.py](openlibrary-data-process.py) simply reads in the CSV (python is a little more forgiving about dodgy data) and writes it out again for each row, but only if there are 5 columns.
+That means requiring another python script to clean up the data. The file [openlibrary-data-process.py](openlibrary-data-process.py) simply reads in the CSV (python is a little more forgiving about dodgy data) and writes it out again for each row, but only where there are 5 columns.
 
 ```console
 python openlibrary-data-process.py
 ```
 
+This generates three files into the `data/processed` directory.
+
 ### Import into database
 
-Using a PostgreSQL database it is possible to import the data directly into tables and then do complex searches with SQL.
+It is then possible to import the data directly into PostgreSQL tables and do complex searches with SQL.
 
-There are a series of database scripts whch will create the database and tables, and then import the data. These are in the [database](database) folder. The data files (created in the previous process) need to be within the `data/processes` folder for this to work.
+There are a series of database scripts whch will create the database and tables, and then import the data. These are in the [database](database) folder. The data files (created in the previous process) need to already be within the `data/processed` folder for this to work.
 
 The command line too `psql` is used to run the scripts. The following command will create the database and tables:
-
 
 ```console
 psql --set=sslmode=require -f openlibrary-db.sql -h localhost -p 5432 -U username postgres
 ```
 
-
 ### Database table details
 
-The data is split into 3 files:
+The database is stplit into 5 main tables
 
-| Data     | Description                                                     | Fields |
-| :------- | :-------------------------------------------------------------- | :----- |
-| Authors  | Authors are the individuals who write the works                 | Name   |
-| Works    | The works as created by the authors, with titles, and subtitles |        |
-| Editions | The particular editions of the works, including ISBNs           |        |
-
+| Data          | Description                                                     |
+| :------------ | :-------------------------------------------------------------- |
+| Authors       | Authors are the individuals who write the works                 |
+| Works         | The works as created by the authors, with titles, and subtitles |
+| Autor Works   | A table linking the works with authors                          |
+| Editions      | The particular editions of the works, including ISBNs           |
+| Edition_ISBNS | The ISBNs for the editions                                      |
 
 ## Query the data
 
