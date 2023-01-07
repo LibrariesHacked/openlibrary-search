@@ -37,11 +37,42 @@ alter table editions set logged;
 
 -- set isbn for edition_isbns from the embedded json
 alter table edition_isbns set unlogged;
+
 insert into edition_isbns (edition_key, isbn)
-select 
-    distinct key, 
-    jsonb_array_elements(data->'isbn_13')->>'key' 
+select
+	distinct key,
+    jsonb_array_elements_text(data->'isbn_13') as isbn
 from editions
-where key is not null
-and data->'isbn_13'->0->'key' is not null;
+where jsonb_array_length(data->'isbn_13') > 0
+and key is not null;
+
+insert into edition_isbns (edition_key, isbn)
+select
+    distinct
+    edition_key, 
+    isbn
+from (
+    select
+        key as edition_key,
+        jsonb_array_elements_text(data->'isbn_10') as isbn
+    from editions
+    where jsonb_array_length(data->'isbn_10') > 0
+    and key is not null) isbn_10s
+where (edition_key, isbn) not in (select edition_key, isbn from edition_isbns);
+
+insert into edition_isbns (edition_key, isbn)
+select
+    distinct
+    edition_key, 
+    isbn
+from (
+    select
+        key as edition_key,
+        jsonb_array_elements_text(data->'isbn') as isbn
+    from editions
+    where jsonb_array_length(data->'isbn') > 0
+    and key is not null) isbns
+where (edition_key, isbn) not in (select edition_key, isbn from edition_isbns);
+
+
 alter table edition_isbns set logged;
