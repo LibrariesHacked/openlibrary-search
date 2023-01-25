@@ -1,6 +1,6 @@
 # Open Library database
 
-Open Library is an online free library of bibliographic data and includes [full data dumps](https://openlibrary.org/developers/dumps) of all its data.
+Open Library is an online library of bibliographic data and includes [full data dumps](https://openlibrary.org/developers/dumps) of all its data.
 
 This project provides instructions and scripts for importing this data into a PostgreSQL database and some sample queries to test the database.
 
@@ -9,7 +9,9 @@ This project provides instructions and scripts for importing this data into a Po
 The following steps should get you up and running with a working database.
 
 1. Install the [required prerequisites](#prerequisites) so that you have the software running and database server.
-2.
+2. [Download the data](#downloading-the-data) from Open Library.
+3. Run the [processing the data](#processing-the-data) scripts to clean it up and make it easier to import.
+4. [Import the data](#import-into-database) into the database.
 
 ### Prerequisites
 
