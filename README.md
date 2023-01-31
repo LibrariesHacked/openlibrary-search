@@ -55,7 +55,16 @@ That means requiring another python script to clean up the data. The file [openl
 python openlibrary-data-process.py
 ```
 
-This generates three files into the `data/processed` directory.
+Because the download files are so huge and are only going to grow, editions is now 45gb+, you can use this file to split the data into smaller files to load sequentially. You can change the number of lines in each chuck here. I reccomend 1-3million
+```
+lines_per_file = 5000
+```
+```console
+python3 openlibrary-data-chunk-process.py
+```
+
+This generates multiple  files into the `data/processed` directory.
+One of those files will be used to access the rest of them when loading the data.
 
 ### Import into database
 
