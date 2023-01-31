@@ -10,7 +10,7 @@ declare
     current_filenames text ARRAY  := (SELECT filenames from fileinfo order by id limit 1);
 
     --  YOU MUST USE FULL PATH HERE OR IT WONT WORK.
-    filepath varchar := 'FULLPATH/data/processed/';
+    filepath varchar := '/Users/chloem/Projects/openlibrary-search/data/processed/';
     input_filename varchar;
     final_filename varchar;
 
