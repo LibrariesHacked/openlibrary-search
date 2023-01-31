@@ -1,2 +1,2 @@
-drop database openlibrary2;
-create database openlibrary2;
+drop database openlibrary;
+create database openlibrary;
