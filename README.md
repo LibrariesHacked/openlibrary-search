@@ -31,6 +31,12 @@ These are updated every month. The downloads available include:
 
 For this project, I downloaded the Editions, Works, and Authors data.
 
+To move the data from your downloads folder, use the following commands in a terminal
+```console
+mv ~/downloads/ol_dump_authors_*txt.gz ./data/unprocessed/ol_dump_authors_.txt.gz
+mv ~/downloads/ol_dump_works_*txt.gz ./data/unprocessed/ol_dump_works_.txt.gz
+mv ~/downloads/ol_dump_editions_*txt.gz ./data/unprocessed/ol_dump_editions_.txt.gz
+```
 To uncompress this data, I used the following commands in a terminal:
 
 ```console
