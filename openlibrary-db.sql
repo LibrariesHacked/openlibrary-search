@@ -1,8 +1,9 @@
 -- create the database
+
 \i 'db_scripts/db_openlibrary.sql';
 
 -- switch to using the database
-\c openlibrary;
+\c openlibrary2;
 
 -- set client encoding
 set client_encoding = 'UTF8';
@@ -14,6 +15,8 @@ set client_encoding = 'UTF8';
 \i 'db_scripts/tbl_editions.sql';
 \i 'db_scripts/tbl_edition_isbns.sql';
 
+-- create filenames that can be access in lieu of parameters  (ACTION needed in this file)
+\i 'db_scripts/tbl_fileinfo.sql';
 -- load in data
 \i 'db_scripts/load.sql';
 
