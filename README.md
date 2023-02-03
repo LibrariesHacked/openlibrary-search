@@ -31,6 +31,12 @@ These are updated every month. The downloads available include:
 
 For this project, I downloaded the Editions, Works, and Authors data.
 
+To move the data from your downloads folder, use the following commands in a terminal
+```console
+mv ~/downloads/ol_dump_authors_*txt.gz ./data/unprocessed/ol_dump_authors_.txt.gz
+mv ~/downloads/ol_dump_works_*txt.gz ./data/unprocessed/ol_dump_works_.txt.gz
+mv ~/downloads/ol_dump_editions_*txt.gz ./data/unprocessed/ol_dump_editions_.txt.gz
+```
 To uncompress this data, I used the following commands in a terminal:
 
 ```console
@@ -49,7 +55,16 @@ That means requiring another python script to clean up the data. The file [openl
 python openlibrary-data-process.py
 ```
 
-This generates three files into the `data/processed` directory.
+Because the download files are so huge and are only going to grow, editions is now 45gb+, you can use this file to split the data into smaller files to load sequentially. You can change the number of lines in each chuck here. I reccomend 1-3million
+```
+lines_per_file = 5000
+```
+```console
+python3 openlibrary-data-chunk-process.py
+```
+
+This generates multiple  files into the `data/processed` directory.
+One of those files will be used to access the rest of them when loading the data.
 
 ### Import into database
 
