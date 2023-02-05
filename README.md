@@ -24,7 +24,7 @@ Open Library offer bulk downloads on their website, available from the [Data Dum
 
 These are updated every month. The downloads available include:
 
-- Editions (~8GB)
+- Editions (~9GB)
 - Works (~2.5GB)
 - Authors (~0.5GB)
 - All types (~10GB)
@@ -55,7 +55,8 @@ That means requiring another python script to clean up the data. The file [openl
 python openlibrary-data-process.py
 ```
 
-Because the download files are so huge and are only going to grow, editions is now 45gb+, you can use this file to split the data into smaller files to load sequentially. You can change the number of lines in each chuck here. I reccomend 1-3million
+Because the download files are so huge and are only going to grow, editions is now 45gb+, you can use this file to split the data into smaller files to load sequentially. You can change the number of lines in each chuck here. I recommend 1-3 million.
+Once the files are split you should delete the 3 .txt files in the uncompressed folder because you will need around 230 Gb of freespace to load all 3 files into the database without encountering lack of space errors.
 ```
 lines_per_file = 5000
 ```
@@ -100,6 +101,7 @@ Get details for a single item using the ISBN13 9781551922461 (Harry Potter and t
 select
     e.data->>'title' "EditionTitle",
     w.data->>'title' "WorkTitle",
+	a.data->>'name' "Name",
     e.data->>'subtitle' "EditionSubtitle",
     w.data->>'subtitle' "WorkSubtitle",
     e.data->>'subjects' "Subjects",
@@ -108,11 +110,15 @@ select
     e.data->'notes'->>'value' "EditionNotes",
     w.data->'notes'->>'value' "WorkNotes"
 from editions e
-join editionisbn13s ei
+join edition_isbns ei
     on ei.edition_key = e.key
 join works w
     on w.key = e.work_key
-where ei.isbn13 = '9781551922461'
+join author_works a_w
+	on a_w.work_key = w.key
+join authors a
+	on a_w.author_key = a.key
+where ei.isbn = '9781551922461'
 ```
 
 ```
