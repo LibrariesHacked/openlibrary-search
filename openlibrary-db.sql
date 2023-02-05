@@ -22,6 +22,7 @@ set client_encoding = 'UTF8';
 -- finally remove temp table
 -- drop table fileinfo;
 
--- you may want to do vacuum verbose analyze istead of vacuum full analyze
--- instead of vacuum full --full makes a complete copy of the db.  verbose is helpful because it explains what it's doing.
-vacuum verbose analyze;
+-- vaccuum analyze will remove dead tuples and try to regain some space
+-- if you have enough room, you can use vacuum full analyze which will gain the most space back, but it requires enough space on your computer to make a complete second copy of the db
+--  if you add verbose it will explain what it is trying to do.  (vacuum verbose analyze)
+vacuum analyze;
