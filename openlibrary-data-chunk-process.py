@@ -7,6 +7,7 @@ from os.path import join
 #  use mv command to position the data
 
 
+
 # mv ~/downloads/ol_dump_authors_*txt.gz ./data/unprocessed/ol_dump_authors_.txt.gz
 # mv ~/downloads/ol_dump_works_*txt.gz ./data/unprocessed/ol_dump_works_.txt.gz
 # mv ~/downloads/ol_dump_editions_*txt.gz ./data/unprocessed/ol_dump_editions_.txt.gz
@@ -14,11 +15,11 @@ from os.path import join
 
 # gzip -d -c data/unprocessed/ol_dump_authors*.txt.gz > data/unprocessed/ol_dump_authors.txt
 # gzip -d -c data/unprocessed/ol_dump_works_*.txt.gz > data/unprocessed/ol_dump_works.txt
+
 # gzip -d -c data/unprocessed/ol_dump_editions_*.txt.gz > data/unprocessed/ol_dump_editions.txt
 
 #  optional command if you want to make a smaller copy from the unzipped version for testing
 # sed -i '' '100000,$ d' ./data/unprocessed/ol_dump_editions.txt
-
 
 
 
@@ -35,11 +36,13 @@ csv.field_size_limit(sys.maxsize)
 input_path = "./data/unprocessed/"
 output_path = "./data/processed/"
 
+
 file_identifers = ['authors','works','editions']
 file_id = 0
 filenames_array = []
 # I used 2k for the test run and 2mil for the actual data
 lines_per_file = 2000
+
 for file_identifer in file_identifers:
     print('Currently processing:... ', file_identifer)
     filenames = []
@@ -64,6 +67,7 @@ for file_identifer in file_identifers:
         if csvoutputfile:
             csvoutputfile.close()
 
+
     filenames_array.append([file_identifer,  str(file_id), False, filenames])
 
     print('\n', file_identifer, 'text file has now been processed.\n')
@@ -75,5 +79,6 @@ filenameswriter = csv.writer(filenamesoutput, delimiter='\t', quotechar='|', quo
 for row in filenames_array:
 
          filenameswriter.writerow([row[0],row[1], row[2],'{' + ','.join(row[3]).strip("'") + '}'])
+
 filenamesoutput.close()
 print('Process complete.')

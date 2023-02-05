@@ -55,8 +55,10 @@ That means requiring another python script to clean up the data. The file [openl
 python openlibrary-data-process.py
 ```
 
+
 Because the download files are so huge and are only going to grow, editions is now 45gb+, you can use this file to split the data into smaller files to load sequentially. You can change the number of lines in each chuck here. I recommend 1-3 million.
 Once the files are split you should delete the 3 .txt files in the uncompressed folder because you will need around 230 Gb of freespace to load all 3 files into the database without encountering lack of space errors.
+
 ```
 lines_per_file = 5000
 ```

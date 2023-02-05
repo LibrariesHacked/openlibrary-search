@@ -42,6 +42,7 @@ RAISE NOTICE 'adding author/works indexes';
 alter table editions set unlogged;
 -- \copy editions from './data/processed/ol_dump_editions.txt' delimiter E'\t' quote '|' csv;
 
+
 SELECT NOW();
 \i 'db_scripts/openlibrary-data-loader.sql'
 alter table editions
