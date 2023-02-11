@@ -2,6 +2,7 @@
 #Decide how large you would like to make each chunk.  - in the edition table I made them 3 million lines which was about 3.24 gigs and ended up taking about an hour to load.
 import csv
 import sys
+import ctypes as ct
 import os
 from os.path import join
 #  use mv command to position the data
@@ -31,7 +32,7 @@ from os.path import join
 # editions	2	False	{editions_2000.csv,editions_4000.csv,editions_6000.csv}
 
 # See https://stackoverflow.com/a/54517228 for more info on this
-csv.field_size_limit(sys.maxsize)
+csv.field_size_limit(int(ct.c_ulong(-1).value // 2))
 
 input_path = "./data/unprocessed/"
 output_path = "./data/processed/"

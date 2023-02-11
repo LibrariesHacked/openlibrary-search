@@ -32,11 +32,13 @@ These are updated every month. The downloads available include:
 For this project, I downloaded the Editions, Works, and Authors data.
 
 To move the data from your downloads folder, use the following commands in a terminal
+
 ```console
 mv ~/downloads/ol_dump_authors_*txt.gz ./data/unprocessed/ol_dump_authors_.txt.gz
 mv ~/downloads/ol_dump_works_*txt.gz ./data/unprocessed/ol_dump_works_.txt.gz
 mv ~/downloads/ol_dump_editions_*txt.gz ./data/unprocessed/ol_dump_editions_.txt.gz
 ```
+
 To uncompress this data, I used the following commands in a terminal:
 
 ```console
@@ -47,7 +49,7 @@ gzip -d -c data/unprocessed/ol_dump_authors_*.txt.gz > data/unprocessed/ol_dump_
 
 ### Processing the data
 
-Unfortunately the downloads provided seem to be a bit messy, or at least don't play nicely with direct importing. The open library file errors on import as the number of columns provided varies. Cleaning it up is difficult as just the text file for editions is 25GB. _Note: Check if this is still the case and if so I could probably use some Linux tools to do this - maybe try `sed` and `awk`_
+Unfortunately the downloads provided seem to be a bit messy, or at least don't play nicely with direct importing. The open library file errors on import as the number of columns provided varies. Cleaning it up is difficult as just the text file for editions is 25GB. _Note: Check if this is still the case and if so there could be some Linux tools to do this - maybe try `sed` and `awk`_
 
 That means requiring another python script to clean up the data. The file [openlibrary-data-process.py](openlibrary-data-process.py) simply reads in the CSV (python is a little more forgiving about dodgy data) and writes it out again for each row, but only where there are 5 columns.
 
@@ -55,18 +57,19 @@ That means requiring another python script to clean up the data. The file [openl
 python openlibrary-data-process.py
 ```
 
-
 Because the download files are so huge and are only going to grow, editions is now 45gb+, you can use this file to split the data into smaller files to load sequentially. You can change the number of lines in each chuck here. I recommend 1-3 million.
+
 Once the files are split you should delete the 3 .txt files in the uncompressed folder because you will need around 230 Gb of freespace to load all 3 files into the database without encountering lack of space errors.
 
 ```
 lines_per_file = 5000
 ```
+
 ```console
 python3 openlibrary-data-chunk-process.py
 ```
 
-This generates multiple  files into the `data/processed` directory.
+This generates multiple files into the `data/processed` directory.
 One of those files will be used to access the rest of them when loading the data.
 
 ### Import into database
@@ -83,7 +86,7 @@ psql --set=sslmode=require -f openlibrary-db.sql -h localhost -p 5432 -U usernam
 
 ### Database table details
 
-The database is stplit into 5 main tables
+The database is split into 5 main tables
 
 | Data          | Description                                                     |
 | :------------ | :-------------------------------------------------------------- |
@@ -99,7 +102,7 @@ That's the database set up - it can now be queried using relatively straightforw
 
 Get details for a single item using the ISBN13 9781551922461 (Harry Potter and the Prisoner of Azkaban).
 
-```
+```sql
 select
     e.data->>'title' "EditionTitle",
     w.data->>'title' "WorkTitle",
@@ -121,38 +124,4 @@ join author_works a_w
 join authors a
 	on a_w.author_key = a.key
 where ei.isbn = '9781551922461'
-```
-
-```
-copy (
-	select distinct
-		e.data->>'title' "EditionTitle",
-		w.data->>'title' "WorkTitle",
-		e.data->>'subtitle' "EditionSubtitle",
-		w.data->>'subtitle' "WorkSubtitle",
-		e.data->>'subjects' "EditionSubjects",
-		w.data->>'subjects' "WorkSubjects",
-		e.data->'description'->>'value' "EditionDescription",
-		w.data->'description'->>'value' "WorkDescription",
-		e.data->'notes'->>'value' "EditionNotes",
-		w.data->'notes'->>'value' "WorkNotes"
-	from editions e
-	join works w
-		on w.key = e.work_key
-	join editionisbn13s ei13
-		on ei13.edition_key = e.key
-	where ei13.isbn13 IN (select isbn13 from isbn13s)
-	and (
-		lower(e.data->>'title') like any (select '%' || keyword || '%' from keywords) OR
-		lower(w.data->>'title') like any (select '%' || keyword || '%' from keywords) OR
-		lower(e.data->>'subtitle') like any (select '%' || keyword || '%' from keywords) OR
-		lower(w.data->>'subtitle') like any (select '%' || keyword || '%' from keywords) OR
-		lower(e.data->>'subjects') like any (select '%' || keyword || '%' from keywords) OR
-		lower(w.data->>'subjects') like any (select '%' || keyword || '%' from keywords) OR
-		lower(e.data->'description'->>'value') like any (select '%' || keyword || '%' from keywords) OR
-		lower(w.data->'description'->>'value') like any (select '%' || keyword || '%' from keywords) OR
-		lower(e.data->'notes'->>'value') like any (select '%' || keyword || '%' from keywords) OR
-		lower(w.data->'notes'->>'value') like any (select '%' || keyword || '%' from keywords)
-	)
-) to '\data\open_library_export.csv' With CSV DELIMITER E'\t';
 ```
