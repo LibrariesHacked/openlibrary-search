@@ -4,7 +4,7 @@
 -- spool the output into copy_commands.sql to generate all the copy commands
 \o copy_commands.sql
 select format('\copy %s from ''./data/processed/%s'' delimiter E''\t'' quote ''|'' csv;', name_of_table, filename)
-from (select id, name_of_table, filename from fileinfo, unnest(filenames) AS filename where hasBeenLoaded = false order by id limit 1) t;
+from (select id, name_of_table, filenames from fileinfo where hasBeenLoaded = false order by id limit 1) t, unnest(filenames) AS filename;
 
 -- turn spooling off
 \o
