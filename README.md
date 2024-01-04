@@ -1,26 +1,26 @@
 # Open Library database
 
-Open Library is an online library of bibliographic data and includes [full data dumps](https://openlibrary.org/developers/dumps) of all its data.
+Open Library is an online library of bibliographic data. Open Library publish [full data dumps](https://openlibrary.org/developers/dumps) of all data.
 
 This project provides instructions and scripts for importing this data into a PostgreSQL database and some sample queries to test the database.
 
-### Getting started
+## Getting started
 
 The following steps should get you up and running with a working database.
 
 1. Install the [required prerequisites](#prerequisites) so that you have the software running and database server.
 2. [Download the data](#downloading-the-data) from Open Library.
-3. Run the [processing the data](#processing-the-data) scripts to clean it up and make it easier to import.
+3. Run the [processing the data](#processing-the-data) scripts to make it easier to import.
 4. [Import the data](#import-into-database) into the database.
 
-### Prerequisites
+## Prerequisites
 
-- Python 3 - Tested with 3.10
-- PostgreSQL - Version 15 is tested but most recent versions should work
+- [Python 3](https://www.python.org/downloads/) - Tested with 3.10
+- [PostgreSQL](https://www.postgresql.org/) - Version 15 is tested but all recent versions should work
 
-### Downloading the data
+## Downloading the data
 
-Open Library offer bulk downloads on their website, available from the [Data Dumps page](https://openlibrary.org/developers/dumps)
+Open Library offer bulk downloads on their website, available from the [data dumps page](https://openlibrary.org/developers/dumps).
 
 These are updated every month. The downloads available include:
 
@@ -29,7 +29,7 @@ These are updated every month. The downloads available include:
 - Authors (~0.5GB)
 - All types (~10GB)
 
-For this project, I downloaded the Editions, Works, and Authors data. The latest can be downloaded using the following commands in a terminal:
+Download the Editions, Works, and Authors data dumps.
 
 ```console
 wget https://openlibrary.org/data/ol_dump_editions_latest.txt.gz -P ~/downloads
@@ -37,45 +37,44 @@ wget https://openlibrary.org/data/ol_dump_works_latest.txt.gz -P ~/downloads
 wget https://openlibrary.org/data/ol_dump_authors_latest.txt.gz -P ~/downloads
 ```
 
-To move the data from your downloads folder, use the following commands in a terminal
+Move the data from your downloads folder.
 
 ```console
-mv ~/downloads/ol_dump_authors_*txt.gz ./data/unprocessed/ol_dump_authors_.txt.gz
-mv ~/downloads/ol_dump_works_*txt.gz ./data/unprocessed/ol_dump_works_.txt.gz
-mv ~/downloads/ol_dump_editions_*txt.gz ./data/unprocessed/ol_dump_editions_.txt.gz
+mv ~/downloads/ol_dump_authors_*txt.gz ./data/unprocessed/ol_dump_authors.txt.gz
+mv ~/downloads/ol_dump_works_*txt.gz ./data/unprocessed/ol_dump_works.txt.gz
+mv ~/downloads/ol_dump_editions_*txt.gz ./data/unprocessed/ol_dump_editions.txt.gz
 ```
 
-To uncompress this data, I used the following commands in a terminal:
+Then uncompress the data files.
 
 ```console
-gzip -d -c data/unprocessed/ol_dump_editions_*.txt.gz > data/unprocessed/ol_dump_editions.txt
-gzip -d -c data/unprocessed/ol_dump_works_*.txt.gz > data/unprocessed/ol_dump_works.txt
-gzip -d -c data/unprocessed/ol_dump_authors_*.txt.gz > data/unprocessed/ol_dump_authors.txt
+gzip -d -c data/unprocessed/ol_dump_editions.txt.gz > data/unprocessed/ol_dump_editions.txt
+gzip -d -c data/unprocessed/ol_dump_works.txt.gz > data/unprocessed/ol_dump_works.txt
+gzip -d -c data/unprocessed/ol_dump_authors.txt.gz > data/unprocessed/ol_dump_authors.txt
 ```
 
 ### Processing the data
 
-Unfortunately the downloads provided seem to be a bit messy, or at least don't play nicely with direct importing. The open library file errors on import as the number of columns provided varies. Cleaning it up is difficult as just the text file for editions is 25GB. _Note: Check if this is still the case and if so there could be some Linux tools to do this - maybe try `sed` and `awk`_
+Unfortunately the downloads provided don't seem to play nicely for direct importing into PostgreSQL. The open library file errors on import as the number of columns provided varies. Cleaning it up is difficult as just the text file for editions is 25GB.
 
-That means requiring another python script to clean up the data. The file [openlibrary-data-process.py](openlibrary-data-process.py) simply reads in the CSV (python is a little more forgiving about dodgy data) and writes it out again for each row, but only where there are 5 columns.
+_Note: Check if this is still the case and if so there could be some Linux tools to do this - maybe try `sed` and `awk`_
 
-```console
-python openlibrary-data-process.py
-```
-
-Because the download files are so huge and are only going to grow, editions is now 45gb+, you can use the `openlibrary-data-chunk-process.py` alternative file to split the data into smaller files to load sequentially. You can change the number of lines in each chuck here. I recommend 1-3 million.
-
-Once the files are split you should delete the 3 .txt files in the uncompressed folder because you will need around 230 Gb of freespace to load all 3 files into the database without encountering lack of space errors.
-
-```
-lines_per_file = 5000
-```
+That can be tackled with a python script. The file [openlibrary_data_process.py](openlibrary_data_process.py) simply reads in the text file and writes it out again for each row, but only where there are 5 columns.
 
 ```console
-python3 openlibrary-data-chunk-process.py
+python3 openlibrary_data_process.py
+```
+
+Because the files are so huge and are only going to grow, editions is now 45gb+, you can use the `openlibrary_data_process_chunked.py` file to split the data into smaller files to load sequentially. You can change the number of lines in each chuck. The default is 2 million.
+
+Once the files are split you can delete the 3 .txt files in the uncompressed folder because you will need around 230 Gb of freespace to load all 3 files into the database without encountering lack of space errors. If you have plenty of space you can keep the files!
+
+```console
+python3 openlibrary_data_process_chunked.py
 ```
 
 This generates multiple files into the `data/processed` directory.
+
 One of those files will be used to access the rest of them when loading the data.
 
 ### Import into database
