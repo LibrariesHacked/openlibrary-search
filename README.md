@@ -1,8 +1,8 @@
 # Open Library database
 
-Open Library is an online library of bibliographic data. Open Library publish [full data dumps](https://openlibrary.org/developers/dumps) of all data.
+Open Library is an online library of bibliographic data. The library publishes [full data dumps](https://openlibrary.org/developers/dumps) of all data.
 
-This project provides instructions and scripts for importing this data into a PostgreSQL database and some sample queries to test the database.
+This project provides instructions and scripts for importing this data into a PostgreSQL database, and some sample queries to test the database.
 
 ## Getting started
 
@@ -17,12 +17,13 @@ The following steps should get you up and running with a working database.
 
 - [Python 3](https://www.python.org/downloads/) - Tested with 3.10
 - [PostgreSQL](https://www.postgresql.org/) - Version 15 is tested but all recent versions should work
+- Disk space - The data files are large, and the uncompressed editions file is 45GB. You will need around 250GB of free space to import all the data.
 
 ## Downloading the data
 
 Open Library offer bulk downloads on their website, available from the [data dumps page](https://openlibrary.org/developers/dumps).
 
-These are updated every month. The downloads available include:
+These are updated every month. The downloads available include (with compressed size):
 
 - Editions (~9GB)
 - Works (~2.5GB)
@@ -59,18 +60,18 @@ Unfortunately the downloads provided don't seem to play nicely for direct import
 
 _Note: Check if this is still the case and if so there could be some Linux tools to do this - maybe try `sed` and `awk`_
 
-That can be tackled with a python script. The file [openlibrary_data_process.py](openlibrary_data_process.py) simply reads in the text file and writes it out again for each row, but only where there are 5 columns.
+That can be tackled with a python script. The file [openlibrary_data_process.py](openlibrary_data_process.py) reads in the text file and writes it out again for each row, but only where there are 5 columns.
 
 ```console
 python openlibrary_data_process.py
 ```
 
-Because the files are so huge and are only going to grow, editions is now 45gb+, you can use the `openlibrary_data_process_chunked.py` file to split the data into smaller files to load sequentially. You can change the number of lines in each chuck. The default is 2 million.
+Because the files are huge and are only going to grow (editions is now 45gb+) you can use the `openlibrary_data_process_chunked.py` file to split the data into smaller files to load sequentially. You can change the number of lines in each chunk. The default is 2 million.
 
-Once the files are split you can delete the 3 .txt files in the uncompressed folder because you will need around 230 Gb of freespace to load all 3 files into the database without encountering lack of space errors. If you have plenty of space you can keep the files!
+Once the files are split you can delete the 3 .txt files in the uncompressed folder because you will need around 250 Gb of freespace to load all 3 files into the database without encountering lack of space errors. If you have plenty of space you can keep the files!
 
 ```console
-python3 openlibrary_data_process_chunked.py
+python openlibrary_data_process_chunked.py
 ```
 
 This generates multiple files into the `data/processed` directory.
@@ -81,15 +82,15 @@ One of those files will be used to access the rest of them when loading the data
 
 It is then possible to import the data directly into PostgreSQL tables and do complex searches with SQL.
 
-There are a series of database scripts whch will create the database and tables, and then import the data. These are in the [database](database) folder. The data files (created in the previous process) need to already be within the `data/processed` folder for this to work.
+There are a series of database scripts which will create the database and tables, and then import the data. These are in the [database](database) folder. The data files (created in the previous process) need to be within the `data/processed` folder for this to work.
 
-The command line too `psql` is used to run the scripts. The following command will create the database and tables:
+The PostgreSQL database command line tool `psql` is used to run the scripts. The following command will create the database and tables:
 
 ```console
 psql --set=sslmode=require -f openlibrary-db.sql -h localhost -p 5432 -U username postgres
 ```
 
-### Database table details
+### Database details
 
 The database is split into 5 main tables
 
@@ -97,9 +98,9 @@ The database is split into 5 main tables
 | :------------ | :-------------------------------------------------------------- |
 | Authors       | Authors are the individuals who write the works                 |
 | Works         | The works as created by the authors, with titles, and subtitles |
-| Autor Works   | A table linking the works with authors                          |
+| Author Works   | A table linking the works with authors                          |
 | Editions      | The particular editions of the works, including ISBNs           |
-| Edition_ISBNS | The ISBNs for the editions                                      |
+| Edition ISBNS | The ISBNs for the editions                                      |
 
 ## Query the data
 
