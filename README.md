@@ -62,7 +62,7 @@ _Note: Check if this is still the case and if so there could be some Linux tools
 That can be tackled with a python script. The file [openlibrary_data_process.py](openlibrary_data_process.py) simply reads in the text file and writes it out again for each row, but only where there are 5 columns.
 
 ```console
-python3 openlibrary_data_process.py
+python openlibrary_data_process.py
 ```
 
 Because the files are so huge and are only going to grow, editions is now 45gb+, you can use the `openlibrary_data_process_chunked.py` file to split the data into smaller files to load sequentially. You can change the number of lines in each chuck. The default is 2 million.
