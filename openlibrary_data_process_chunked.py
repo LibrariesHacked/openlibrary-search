@@ -32,11 +32,11 @@ def run():
     """Run the script."""
 
     filenames_array = []
+    file_id = 0
 
     for identifier in FILE_IDENTIFIERS:
         print('Currently processing ', identifier)
 
-        file_id = 0
         filenames = []
         csvoutputfile = None
 
