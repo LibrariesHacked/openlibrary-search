@@ -1,8 +1,10 @@
 # Open Library database
 
-Open Library is an online library of bibliographic data. The library publishes [full data dumps](https://openlibrary.org/developers/dumps) of all data.
+Open Library is an online library of bibliographic data. The library publishes [full data dumps](https://openlibrary.org/developers/dumps) of all books and works.
 
 This project provides instructions and scripts for importing this data into a PostgreSQL database, and some sample queries to test the database.
+
+The database is primarily aimed at querying the database using ISBN. It could be extended to change this to other identifiers, such as Open Library ID, or to query by title or author.
 
 ## Getting started
 
@@ -98,7 +100,7 @@ The database is split into 5 main tables
 | :------------ | :-------------------------------------------------------------- |
 | Authors       | Authors are the individuals who write the works                 |
 | Works         | The works as created by the authors, with titles, and subtitles |
-| Author Works   | A table linking the works with authors                          |
+| Author Works  | A table linking the works with authors                          |
 | Editions      | The particular editions of the works, including ISBNs           |
 | Edition ISBNS | The ISBNs for the editions                                      |
 
