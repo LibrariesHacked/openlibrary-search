@@ -1,16 +1,16 @@
 # Open Library database
 
-Open Library is an online library of bibliographic data. The library publishes [full data dumps](https://openlibrary.org/developers/dumps) of all books and works.
+Open Library is an online library of bibliographic data. The library publishes [full data dumps](https://openlibrary.org/developers/dumps) of all authors, works, and editions.
 
 This project provides instructions and scripts for importing this data into a PostgreSQL database, and some sample queries to test the database.
 
-The database is primarily aimed at querying the database using ISBN. It could be extended to change this to other identifiers, such as Open Library ID, or to query by title or author.
+The database is primarily aimed at querying the database using ISBN and includes tables specifically for these identifiers. It could be extended to change this to other identifiers, such as Open Library ID, or to query by title or author.
 
 ## Getting started
 
 The following steps should get you up and running with a working database.
 
-1. Install the [required prerequisites](#prerequisites) so that you have the software running and database server.
+1. Install the [required prerequisites](#prerequisites) so that you have a database server.
 2. [Download the data](#downloading-the-data) from Open Library.
 3. Run the [processing the data](#processing-the-data) scripts to make it easier to import.
 4. [Import the data](#import-into-database) into the database.
@@ -19,7 +19,7 @@ The following steps should get you up and running with a working database.
 
 - [Python 3](https://www.python.org/downloads/) - Tested with 3.10
 - [PostgreSQL](https://www.postgresql.org/) - Version 15 is tested but all recent versions should work
-- Disk space - The data files are large, and the uncompressed editions file is 45GB. You will need around 250GB of free space to import all the data.
+- Disk space - The data files are large, and the uncompressed editions file is 45GB. You will need at least 250GB of free space to import all the data.
 
 ## Downloading the data
 
@@ -102,13 +102,13 @@ The database is split into 5 main tables
 | Works         | The works as created by the authors, with titles, and subtitles |
 | Author Works  | A table linking the works with authors                          |
 | Editions      | The particular editions of the works, including ISBNs           |
-| Edition ISBNS | The ISBNs for the editions                                      |
+| Edition ISBNs | The ISBNs for the editions                                      |
 
 ## Query the data
 
-That's the database set up - it can now be queried using relatively straightforward SQL.
+That's the database set up - it can now be queried using SQL.
 
-Get details for a single item using the ISBN13 9781551922461 (Harry Potter and the Prisoner of Azkaban).
+Get details for a single item using the ISBN13 9781551922461 (Harry Potter and the Prisoner of Azkaban):
 
 ```sql
 select
