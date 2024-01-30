@@ -1,7 +1,7 @@
 create table fileinfo (
   name_of_table text,
   id int,
-  hasBeenLoaded boolean,
+  loaded boolean,
   filenames text ARRAY,
   constraint key primary key (id)
 );

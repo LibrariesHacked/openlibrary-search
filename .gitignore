@@ -1,11 +1,13 @@
 *.csv
-*.csv
 *.txt
 *.xlsx
 
-data/unprocessed/ol_dump_works_*.txt.gz
-data/unprocessed/ol_dump_authors_*.txt.gz
-data/unprocessed/ol_dump_editions_*.txt.gz
-.vscode/settings.json
+data/unprocessed/ol_dump_works*.txt.gz
+data/unprocessed/ol_dump_authors*.txt.gz
+data/unprocessed/ol_dump_editions*.txt.gz
+
 create_db.bat
+
 copy_commands.sql
+
+.vscode/settings.json
