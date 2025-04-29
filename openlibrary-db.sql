@@ -4,6 +4,9 @@
 -- -- switch to using the database
 \c openlibrary;
 
+-- additional extensions
+create extension pg_trgm;
+
 -- -- set client encoding
 set client_encoding = 'UTF8';
 

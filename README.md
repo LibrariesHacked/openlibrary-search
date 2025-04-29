@@ -25,10 +25,10 @@ The following steps should get you up and running with a working database.
 
 Open Library offer bulk downloads on their website, available from the [data dumps page](https://openlibrary.org/developers/dumps).
 
-These are updated every month. The downloads available include (with compressed size):
+These are updated every month. The downloads available include (compressed sizes shown):
 
-- Editions (~9GB)
-- Works (~2.5GB)
+- Editions (~10.5GB)
+- Works (~3.5GB)
 - Authors (~0.5GB)
 - All types (~10GB)
 
@@ -58,17 +58,13 @@ gzip -d -c data/unprocessed/ol_dump_authors.txt.gz > data/unprocessed/ol_dump_au
 
 ### Processing the data
 
-Unfortunately the downloads provided don't seem to play nicely for direct importing into PostgreSQL. The open library file errors on import as the number of columns provided varies. Cleaning it up is difficult as just the text file for editions is 25GB.
+Unfortunately the downloads provided don't play nicely for direct importing into PostgreSQL. The open library file errors on import as the number of columns provided varies. Cleaning it up is difficult as just the text file for editions is 25GB.
 
-_Note: Check if this is still the case and if so there could be some Linux tools to do this - maybe try `sed` and `awk`_
+_To do note: Check if this is still the case and if so there could be some Linux tools to do this - maybe try `sed` and `awk`_
 
-That can be tackled with a python script. The file [openlibrary_data_process.py](openlibrary_data_process.py) reads in the text file and writes it out again for each row, but only where there are 5 columns.
+Instead, the file [openlibrary_data_process.py](openlibrary_data_process.py) reads in the text file and writes it out again for each row, but only where there are 5 columns.
 
-```console
-python openlibrary_data_process.py
-```
-
-Because the files are huge and are only going to grow (editions is now 45gb+) you can use the `openlibrary_data_process_chunked.py` file to split the data into smaller files to load sequentially. You can change the number of lines in each chunk. The default is 2 million.
+Because the files are huge and are only going to grow (editions is now 45gb+) the `openlibrary_data_process.py` file also splits the data into smaller files to load sequentially. You can change the number of lines in each chunk by using the `LINES_PER_FILE` setting in the script. The default is 2 million.
 
 Once the files are split you can delete the 3 .txt files in the uncompressed folder because you will need around 250 Gb of freespace to load all 3 files into the database without encountering lack of space errors. If you have plenty of space you can keep the files!
 
@@ -82,11 +78,11 @@ One of those files will be used to access the rest of them when loading the data
 
 ### Import into database
 
-It is then possible to import the data directly into PostgreSQL tables and do complex searches with SQL.
+We import the data directly into PostgreSQL tables and can then do complex searches with SQL.
 
 There are a series of database scripts which will create the database and tables, and then import the data. These are in the [database](database) folder. The data files (created in the previous process) need to be within the `data/processed` folder for this to work.
 
-The PostgreSQL database command line tool `psql` is used to run the scripts. The following command will create the database and tables:
+The PostgreSQL database command line tool `psql` is used to run the scripts. The following command will create the database and tables. Replace `username` with your database server username.
 
 ```console
 psql --set=sslmode=require -f openlibrary-db.sql -h localhost -p 5432 -U username postgres

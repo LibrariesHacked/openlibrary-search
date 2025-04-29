@@ -1,30 +1,96 @@
-""" This script processes the bulk download data from the Open Library project."""
+"""
+This script processes the bulk download data from the Open Library project.
+It converts the large text files into smaller csv files which are easier to load into the db.
+Decide how large you would like to make each chunk using LINES_PER_FILE
+For editions, 3 million lines was about 3.24 gigs and about an hour to load.
+"""
 
 import csv
 import ctypes as ct
 import os
 
+# Optional if you want to make a smaller copy from the unzipped version for testing
+# sed -i '' '100000,$ d' ./data/unprocessed/ol_dump_editions.txt
+
+# You can run this file once with all 3 downloaded and unzipped files or run it as they come in.
+# Just make sure the end product in filenames.txt  looks like this
+# authors	0	False	{authors_2000.csv,authors_4000.csv,authors_6000.csv}
+# works	1	False	{works_2000.csv,works_4000.csv,works_6000.csv,works_8000.csv}
+# editions	2	False	{editions_2000.csv,editions_4000.csv,editions_6000.csv}
+
+# Field size limit: See https://stackoverflow.com/a/54517228 for more info on this setting
+csv.field_size_limit(int(ct.c_ulong(-1).value // 2))
+
+LINES_PER_FILE = 2000000
+
 INPUT_PATH = "./data/unprocessed/"
 OUTPUT_PATH = "./data/processed/"
 
-filesforprocessing = [
-    "ol_dump_authors.txt",
-    "ol_dump_editions.txt",
-    "ol_dump_works.txt",
-]
+FILE_IDENTIFIERS = ['authors', 'works', 'editions']
 
-# See https://stackoverflow.com/a/54517228 for more info on this
-csv.field_size_limit(int(ct.c_ulong(-1).value // 2))
 
-for file in filesforprocessing:
-    with open(os.path.join(OUTPUT_PATH, file), "w", newline="", encoding="utf-8") as csv_out:
-        csvwriter = csv.writer(
-            csv_out, delimiter="\t", quotechar="|", quoting=csv.QUOTE_MINIMAL
-        )
+def run():
+    """Run the script."""
 
-        with open(os.path.join(INPUT_PATH, file), "r", encoding="utf-8") as csv_in:
-            csvreader = csv.reader(csv_in, delimiter="\t")
-            for row in csvreader:
+    filenames_array = []
+    file_id = 0
+
+    for identifier in FILE_IDENTIFIERS:
+
+        print(f"Currently processing {identifier}")
+
+        filenames = []
+        csv_output_file = None
+        writer = None
+
+        file_path = os.path.join(INPUT_PATH, (f"ol_dump_{identifier}.txt"))
+
+        with open(file_path, encoding="utf-8") as csv_input_file:
+            reader = csv.reader(csv_input_file, delimiter='\t')
+
+            for line, row in enumerate(reader):
+
+                if line % LINES_PER_FILE == 0:
+
+                    # Close the previous file if it exists
+                    if csv_output_file:
+                        csv_output_file.close()
+
+                    filename = identifier + f"_{line + LINES_PER_FILE}.csv"
+                    filenames.append(filename)
+
+                    # Open a new file for writing
+                    output = open(os.path.join(OUTPUT_PATH, filename),
+                                  "w", newline="", encoding="utf-8")
+                    writer = csv.writer(
+                        output, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+
                 if len(row) > 4:
-                    csvwriter.writerow(
+                    writer.writerow(
                         [row[0], row[1], row[2], row[3], row[4]])
+
+            # Close the last file after processing all lines
+            if csv_output_file:
+                csv_output_file.close()
+
+        filenames_array.append([identifier,  str(file_id), False, filenames])
+
+        print(f"{identifier} text file has now been processed")
+        file_id += 1
+
+    # list of filenames that can be loaded into database for automatic file reading.
+    filenamesoutput = open(os.path.join(
+        OUTPUT_PATH, "filenames.txt"), "a", newline="", encoding="utf-8")
+    filenameswriter = csv.writer(
+        filenamesoutput, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    for row in filenames_array:
+
+        filenameswriter.writerow(
+            [row[0], row[1], row[2], '{' + ','.join(row[3]).strip("'") + '}'])
+
+    filenamesoutput.close()
+
+    print("Process complete")
+
+
+run()
