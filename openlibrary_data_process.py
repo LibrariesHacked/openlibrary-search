@@ -9,7 +9,6 @@ import csv
 import ctypes as ct
 from multiprocessing import Pool
 import os
-from typing import List
 
 # Optional if you want to make a smaller copy from the unzipped version for testing
 # sed -i '' '100000,$ d' ./data/unprocessed/ol_dump_editions.txt
