@@ -7,6 +7,7 @@ For editions, 3 million lines was about 3.24 gigs and about an hour to load.
 
 import csv
 import ctypes as ct
+from multiprocessing import Pool
 import os
 
 # Optional if you want to make a smaller copy from the unzipped version for testing
@@ -25,72 +26,56 @@ LINES_PER_FILE = 2000000
 
 INPUT_PATH = "./data/unprocessed/"
 OUTPUT_PATH = "./data/processed/"
-
 FILE_IDENTIFIERS = ['authors', 'works', 'editions']
 
+def process_file(source_file: str, file_id) -> None:
+    """
+    Processes a single file by chunking it into smaller csv files.
 
-def run():
-    """Run the script."""
+    :param source_file: The name of the file being processed
+    :param file_id: The id of the file to process
+    """
+    print(f"Currently processing {source_file}")
 
-    filenames_array = []
-    file_id = 0
+    filenames = []
+    file_path = os.path.join(INPUT_PATH, (f"ol_dump_{source_file}.txt"))
+    with open(file_path, encoding="utf-8") as csv_input_file:
+        reader = csv.reader(csv_input_file, delimiter='\t')
 
-    for identifier in FILE_IDENTIFIERS:
+        for line, row in enumerate(reader):
+            # Every time the row limit is reached, write the chunked csv file
+            if line % LINES_PER_FILE == 0:
+                chunked_filename = source_file + f"_{line + LINES_PER_FILE}.csv"
+                filenames.append(chunked_filename)
 
-        print(f"Currently processing {identifier}")
+                # Open a new file for writing
+                output = open(os.path.join(OUTPUT_PATH, chunked_filename),
+                              "w", newline="", encoding="utf-8")
+                writer = csv.writer(
+                    output, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
-        filenames = []
-        csv_output_file = None
-        writer = None
+            if len(row) > 4:
+                writer.writerow(
+                    [row[0], row[1], row[2], row[3], row[4]])
 
-        file_path = os.path.join(INPUT_PATH, (f"ol_dump_{identifier}.txt"))
+    with open(os.path.join(OUTPUT_PATH, "filenames.txt"), "a", newline="", encoding="utf-8") as filenames_output:
+        filenames_writer = csv.writer(filenames_output, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        filenames_writer.writerow(
+            [source_file, file_id, False, '{' + ','.join(filenames).strip("'") + '}'])
 
-        with open(file_path, encoding="utf-8") as csv_input_file:
-            reader = csv.reader(csv_input_file, delimiter='\t')
+        print(f"{source_file} text file has now been processed")
 
-            for line, row in enumerate(reader):
 
-                if line % LINES_PER_FILE == 0:
-
-                    # Close the previous file if it exists
-                    if csv_output_file:
-                        csv_output_file.close()
-
-                    filename = identifier + f"_{line + LINES_PER_FILE}.csv"
-                    filenames.append(filename)
-
-                    # Open a new file for writing
-                    output = open(os.path.join(OUTPUT_PATH, filename),
-                                  "w", newline="", encoding="utf-8")
-                    writer = csv.writer(
-                        output, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-
-                if len(row) > 4:
-                    writer.writerow(
-                        [row[0], row[1], row[2], row[3], row[4]])
-
-            # Close the last file after processing all lines
-            if csv_output_file:
-                csv_output_file.close()
-
-        filenames_array.append([identifier,  str(file_id), False, filenames])
-
-        print(f"{identifier} text file has now been processed")
-        file_id += 1
-
-    # list of filenames that can be loaded into database for automatic file reading.
-    filenamesoutput = open(os.path.join(
-        OUTPUT_PATH, "filenames.txt"), "a", newline="", encoding="utf-8")
-    filenameswriter = csv.writer(
-        filenamesoutput, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-    for row in filenames_array:
-
-        filenameswriter.writerow(
-            [row[0], row[1], row[2], '{' + ','.join(row[3]).strip("'") + '}'])
-
-    filenamesoutput.close()
-
+if __name__ == '__main__':
+    """
+    Main driver for the data processor. For each file, a new process is created that
+    performs data processing in parallel.
+    """
+    with Pool() as pool:
+        results = []
+        for i, filename in enumerate(FILE_IDENTIFIERS):
+            results.append(pool.apply_async(process_file, args=(filename, i)))
+        # Wait for the processes to finish before exiting the main python program
+        for res in results:
+            res.wait()
     print("Process complete")
-
-
-run()
