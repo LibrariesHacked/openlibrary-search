@@ -26,7 +26,8 @@ LINES_PER_FILE = 2000000
 
 INPUT_PATH = "./data/unprocessed/"
 OUTPUT_PATH = "./data/processed/"
-FILE_IDENTIFIERS = ['authors', 'works', 'editions']
+FILE_IDENTIFIERS = ["authors", "works", "editions"]
+
 
 def process_file(source_file: str, file_id) -> None:
     """
@@ -40,8 +41,9 @@ def process_file(source_file: str, file_id) -> None:
     filenames = []
     file_path = os.path.join(INPUT_PATH, (f"ol_dump_{source_file}.txt"))
     with open(file_path, encoding="utf-8") as csv_input_file:
-        reader = csv.reader(csv_input_file, delimiter='\t')
+        reader = csv.reader(csv_input_file, delimiter="\t")
 
+        writer = None
         for line, row in enumerate(reader):
             # Every time the row limit is reached, write the chunked csv file
             if line % LINES_PER_FILE == 0:
@@ -49,28 +51,32 @@ def process_file(source_file: str, file_id) -> None:
                 filenames.append(chunked_filename)
 
                 # Open a new file for writing
-                output = open(os.path.join(OUTPUT_PATH, chunked_filename),
-                              "w", newline="", encoding="utf-8")
+                output = open(
+                    os.path.join(OUTPUT_PATH, chunked_filename),
+                    "w",
+                    newline="",
+                    encoding="utf-8",
+                )
                 writer = csv.writer(
-                    output, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                    output, delimiter="\t", quotechar="|", quoting=csv.QUOTE_MINIMAL
+                )
 
             if len(row) > 4:
-                writer.writerow(
-                    [row[0], row[1], row[2], row[3], row[4]])
+                writer.writerow([row[0], row[1], row[2], row[3], row[4]])
 
-    with open(os.path.join(OUTPUT_PATH, "filenames.txt"), "a", newline="", encoding="utf-8") as filenames_output:
-        filenames_writer = csv.writer(filenames_output, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    with open(
+        os.path.join(OUTPUT_PATH, "filenames.txt"), "a", newline="", encoding="utf-8"
+    ) as filenames_output:
+        filenames_writer = csv.writer(
+            filenames_output, delimiter="\t", quotechar="|", quoting=csv.QUOTE_MINIMAL
+        )
         filenames_writer.writerow(
-            [source_file, file_id, False, '{' + ','.join(filenames).strip("'") + '}'])
-
+            [source_file, file_id, False, "{" + ",".join(filenames).strip("'") + "}"]
+        )
         print(f"{source_file} text file has now been processed")
 
 
-if __name__ == '__main__':
-    """
-    Main driver for the data processor. For each file, a new process is created that
-    performs data processing in parallel.
-    """
+if __name__ == "__main__":
     with Pool() as pool:
         results = []
         for i, filename in enumerate(FILE_IDENTIFIERS):

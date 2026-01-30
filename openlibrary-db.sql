@@ -1,16 +1,16 @@
 -- create the database
 \i 'db_scripts/db_openlibrary.sql';
 
--- -- switch to using the database
+-- switch to using the new database
 \c openlibrary;
 
 -- additional extensions
 create extension pg_trgm;
 
--- -- set client encoding
+-- set client encoding
 set client_encoding = 'UTF8';
 
--- -- create tables
+-- create tables
 \i 'db_scripts/tbl_authors.sql';
 \i 'db_scripts/tbl_works.sql';
 \i 'db_scripts/tbl_author_works.sql';
