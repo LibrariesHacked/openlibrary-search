@@ -1,31 +1,31 @@
 # Open Library database
 
-Open Library is an online library of bibliographic data. Open library publish [full data dumps](https://openlibrary.org/developers/dumps) of data on authors, works, and editions.
+Open Library is an large online library of bibliographic data. They publish [full data dumps](https://openlibrary.org/developers/dumps) of data on authors, works, and editions.
 
 This project provides instructions and scripts for downloading and importing this data into a PostgreSQL database, and some sample queries to test the database.
 
-The database is primarily aimed at querying the database using ISBN and includes tables specifically for these identifiers. It could be extended to change this to other identifiers, such as Open Library ID, or text searching by title or author.
+The database is primarily aimed at querying using ISBN and includes tables specifically for these identifiers. It could be extended to change this to other identifiers, such as Open Library ID, or text searching by title or author.
 
 ## Getting started
 
 The following steps should get you up and running with a working database.
 
-1. Install the [required prerequisites](#prerequisites) so that you have a database server.
+1. Install the [required prerequisites](#prerequisites) so that you have a local database server.
 2. [Download the data](#downloading-the-data) from Open Library.
-3. Run the [processing the data](#processing-the-data) scripts to make it easier to import.
+3. Run the [processing the data](#processing-the-data) scripts to prepare for import.
 4. [Import the data](#import-into-database) into the database.
 
 ## Prerequisites
 
 - [Python 3](https://www.python.org/downloads/) - Tested with 3.10
-- [PostgreSQL](https://www.postgresql.org/) - Version 15 is tested but all recent versions should work. The scripts should be run on a local server - if you need to transfer this to the cloud after that would be better done once the database has been created.
+- [PostgreSQL](https://www.postgresql.org/) - Version 15 is tested but all recent versions should work. The scripts should be run on a local server - if you need to transfer this to the cloud, it would be better done once the database has been created.
 - Disk space - The data files are large, and the uncompressed editions file is 45GB. You will need at least 250GB of free space to import all the data.
 
 ## Downloading the data
 
 Open Library offer bulk downloads on their website, available from the [data dumps page](https://openlibrary.org/developers/dumps).
 
-These are updated every month. The downloads available include (compressed sizes shown):
+These are updated every month. The downloads include (compressed sizes shown):
 
 - Editions (~10.5GB)
 - Works (~3.5GB)
@@ -62,7 +62,7 @@ This should leave you with 3 unprocessed files in the `data/unprocessed` directo
 
 Unfortunately the downloads provided don't play nicely for direct importing into PostgreSQL. They error on import as the number of columns provided varies. Cleaning it up can be difficult as the text file for editions is 25GB.
 
-_To do note: Check if this is still the case and if so there could be some Linux tools to do this - maybe try `sed` and `awk`_
+_To do note: Check if this is still the case and if so there could be some Linux tools to fix this - maybe try `sed` and `awk`_
 
 Instead, the file [openlibrary_data_process.py](openlibrary_data_process.py) reads in the text file and writes it out again for each row, but only where there are 5 columns.
 
@@ -90,9 +90,7 @@ The PostgreSQL database command line tool `psql` is used to run the scripts. The
 psql --set=sslmode=require -f openlibrary-db.sql -h localhost -p 5432 -U username postgres
 ```
 
-This process is intensive and you should expect it to take a long time.
-
-On a Macbook M3 this took about 5 hours.
+This process is intensive and you should expect it to take a long time. On a Macbook M3 this took about 5 hours.
 
 ### Database details
 
